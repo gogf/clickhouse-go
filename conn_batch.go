@@ -19,8 +19,8 @@ package clickhouse
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -30,7 +30,10 @@ import (
 	"github.com/ClickHouse/clickhouse-go/v2/lib/proto"
 )
 
-var splitInsertRe = regexp.MustCompile(`(?i)\sVALUES\s*\(`)
+var (
+	splitInsertRe  = regexp.MustCompile(`(?i)\sVALUES\s*\(`)
+	ErrProcessDone = errors.New("os: process already finished")
+)
 
 func (c *connect) prepareBatch(ctx context.Context, query string, release func(*connect, error)) (*batch, error) {
 	query = splitInsertRe.Split(query, -1)[0]
@@ -78,7 +81,7 @@ type batch struct {
 func (b *batch) Abort() error {
 	defer func() {
 		b.sent = true
-		b.release(os.ErrProcessDone)
+		b.release(ErrProcessDone)
 	}()
 	if b.sent {
 		return ErrBatchAlreadySent
