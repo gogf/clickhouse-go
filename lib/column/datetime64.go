@@ -232,9 +232,13 @@ func (dt *DateTime64) parseString(value string) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
+
 	// scale to the appropriate units based on the precision
-	val := tv.UnixMilli() * int64(math.Pow10(dt.precision-3))
-	return val, nil
+	// this is a
+	//val := tv.UnixMilli() * int64(math.Pow10(dt.precision-3))
+	//return val, nil
+
+	return tv.Round(time.Millisecond).UnixNano() / (int64(time.Millisecond) / int64(time.Nanosecond)) * int64(math.Pow10(dt.precision-3)), nil
 }
 
 var _ Interface = (*DateTime64)(nil)
